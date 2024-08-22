@@ -1,12 +1,10 @@
 package com.example.promo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "user_entity")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,6 +15,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String vkId;
-    private String name;
+    private String firstName;
+    private String lastName;
     private int coins;
 }
