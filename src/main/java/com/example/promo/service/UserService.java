@@ -21,7 +21,7 @@ public class UserService {
     private JdbcTemplate jdbcTemplate;
 
     public User save(UserRequest request) {
-        if (userRepository.findByVkId(request.getVkId()) != null) {
+        if (userExists(request.getVkId())) {
             return null;
         }
         User user = User.builder()
@@ -29,29 +29,58 @@ public class UserService {
                 .lastName(request.getLastName())
                 .firstName(request.getFirstName())
                 .coins(0)
+                .isAdmin(false)
+                .usedPromoCodes(new ArrayList<>())
                 .build();
         return userRepository.save(user);
     }
 
-    private void validateNumCoinsAndUserExist(User user, int coins) {
-        if (coins <= 0) {
-            throw new CoinLessZeroException("Coins must be greater than zero");
+    private Boolean userExists(String vkId) {
+        return userRepository.findByVkId(vkId) != null;
+    }
+
+    public User update(User user) {
+        if (userExists(user.getVkId())) {
+            return userRepository.save(user);
         }
+        user = User.builder()
+                .vkId(user.getVkId())
+                .lastName(user.getLastName())
+                .firstName(user.getFirstName())
+                .coins(user.getCoins())
+                .isAdmin(user.getIsAdmin())
+                .usedPromoCodes(user.getUsedPromoCodes())
+                .build();
+        return userRepository.save(user);
+    }
+
+    private boolean validateNumCoinsAndUserExist(User user, int coins) {
+        return coins > 0 && user != null;
+    }
+
+    public User setAdmin(UserRequest userRequest, Boolean admin) {
+        User user = userRepository.findByVkId(userRequest.getVkId());
         if (user == null) {
-            throw new UserNotFoundException("Not found user");
+            user = save(userRequest);
         }
+        user.setIsAdmin(admin);
+        return userRepository.save(user);
     }
 
     public User addCoins(String vkId, int coins) {
         User user = userRepository.findByVkId(vkId);
-        validateNumCoinsAndUserExist(user, coins);
+        if (!validateNumCoinsAndUserExist(user, coins)) {
+            return null;
+        }
         user.setCoins(user.getCoins() + coins);
         return userRepository.save(user);
     }
 
     public User reduceCoins(String vkId, int coins) {
         User user = userRepository.findByVkId(vkId);
-        validateNumCoinsAndUserExist(user, coins);
+        if (!validateNumCoinsAndUserExist(user, coins)) {
+            return null;
+        }
         user.setCoins(user.getCoins() - coins);
         return userRepository.save(user);
     }
@@ -150,4 +179,15 @@ public class UserService {
         return jdbcTemplate.queryForMap(sql, vkId);
     }
 
+    public User getUserByVkId(String vkId) {
+        return userRepository.findByVkId(vkId);
+    }
+
+    public void resetAdmins() {
+        List<User> users = userRepository.findByIsAdmin(true);
+        for (User user : users) {
+            user.setIsAdmin(false);
+            userRepository.save(user);
+        }
+    }
 }

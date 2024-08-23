@@ -1,0 +1,23 @@
+{
+  "properties": [
+    {
+      "name": "vk.admin",
+      "type": "java.lang.String",
+      "description": "Description for vk.admin."
+    },
+    {
+      "name": "vk.group",
+      "type": "java.lang.String",
+      "description": "Description for vk.group."
+    },
+    {
+      "name": "vk.token",
+      "type": "java.lang.String",
+      "description": "Description for vk.token."
+    },
+    {
+      "name": "vk.manager",
+      "type": "java.lang.String",
+      "description": "Description for vk.manager."
+    }
+  ] }
