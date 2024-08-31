@@ -58,11 +58,7 @@ public class UserService {
         return coins > 0 && user != null;
     }
 
-    public User setAdmin(UserRequest userRequest, Boolean admin) {
-        User user = userRepository.findByVkId(userRequest.getVkId());
-        if (user == null) {
-            user = save(userRequest);
-        }
+    public User setAdmin(User user, Boolean admin) {
         user.setIsAdmin(admin);
         return userRepository.save(user);
     }

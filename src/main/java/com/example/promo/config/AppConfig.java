@@ -59,7 +59,7 @@ public class AppConfig {
                 user = userService.getUserByVkId(vkId);
             }
             System.out.println("Set...");
-            userService.setAdmin(userRequest1, true);
+            userService.setAdmin(user, true);
             System.out.println("Admin: " + user.getFirstName() + " " + user.getLastName());
         }
     }
