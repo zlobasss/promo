@@ -40,20 +40,18 @@ public class AppConfig {
                 System.out.println("User not found: " + vkId);
                 continue;
             }
-            User user = null;
+            User user;
+            UserRequest userRequest1;
             try {
-                user = userService.save(userRequest.get());
+                userRequest1 = userRequest.get();
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
+            user = userService.save(userRequest1);
             if (user == null) {
                 user = userService.getUserByVkId(vkId);
             }
-            try {
-                userService.setAdmin(userRequest.get(), true);
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
+            userService.setAdmin(userRequest1, true);
             System.out.println("Admin: " + user.getFirstName() + " " + user.getLastName());
         }
     }
