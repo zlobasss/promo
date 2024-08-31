@@ -56,7 +56,7 @@ public class AppConfig {
             user = userService.save(userRequest1);
             if (user == null) {
                 System.out.println("Search...");
-                user = userService.getUserByVkId(vkId);
+                user = userService.getUserByVkId(userRequest1.getVkId());
             }
             System.out.println("Set...");
             userService.setAdmin(user, true);
