@@ -45,8 +45,10 @@ public class AppConfig {
             }
             User user;
             UserRequest userRequest1;
+            System.out.print("vkId: " + vkId);
             try {
                 userRequest1 = userRequest.get();
+                System.out.println(" : Success");
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
