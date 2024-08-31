@@ -65,6 +65,6 @@ public class PromoCodeService {
         }
         promoCode.getUsersActivated().add(user);
         userService.addCoins(vkId, promoCode.getCoinsReward());
-        return "Начислено " + promoCode.getCoinsReward() + " монет";
+        return "Начислено " + promoCode.getCoinsReward() + " энергии ⚡";
     }
 }

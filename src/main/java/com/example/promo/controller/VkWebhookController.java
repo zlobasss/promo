@@ -6,6 +6,7 @@ import com.example.promo.entity.PromoCode;
 import com.example.promo.entity.Section;
 import com.example.promo.dto.UserRequest;
 import com.example.promo.entity.User;
+import com.example.promo.repository.UserRepository;
 import com.example.promo.service.*;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
@@ -43,6 +44,7 @@ public class VkWebhookController {
     private final User manager;
     private final String CONFIRMATION_CODE;
     private final String SECRET_KEY;
+    private final UserRepository userRepository;
 
 
     public VkWebhookController(VkApiService vkApiService,
@@ -52,7 +54,7 @@ public class VkWebhookController {
                                ProductService productService,
                                @Value("${vk.manager}") String vkId,
                                @Value("${vk.confirm.code}") String confirm,
-                               @Value("${vk.secret.key}") String secret) {
+                               @Value("${vk.secret.key}") String secret, UserRepository userRepository) {
         CONFIRMATION_CODE = confirm;
         SECRET_KEY = secret;
         vkIdAndLastCommand = new HashMap<>();
@@ -72,6 +74,7 @@ public class VkWebhookController {
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
+        this.userRepository = userRepository;
     }
 
 
@@ -154,6 +157,10 @@ public class VkWebhookController {
                             break;
                         }
                         messageForSend = "Добавлено " + coins + " энергии для " + vkIdRequest;
+                        break;
+                    case "Сделать рассылку 1":
+                        userService.sendMessageByListUser(userRepository.findByIsAdmin(false), text);
+                        messageForSend = "Рассылка отправлена....";
                         break;
                     case "Убавить энергии 1":
                         UserRequest userRequestReduce = null;
@@ -414,6 +421,17 @@ public class VkWebhookController {
                         vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin()));
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
                         messageForSend = "Введите id пользователя...";
+                        break;
+                    case "Сделать рассылку":
+                        vkIdAndLastCommand.put(vkId, "Сделать рассылку 1");
+                        vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section., user.getIsAdmin()));
+                        keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
+                        messageForSend = "Введите сообщение рассылки...";
+                        break;
+                    case "Сброс энергии":
+                        userService.resetCoinsByListUser(userRepository.findAll());
+                        keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin());
+                        messageForSend = "Сброс завершился...";
                         break;
                     case "Добавить промокод":
                         vkIdAndLastCommand.put(vkId, "Добавить промокод 1");

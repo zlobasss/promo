@@ -31,9 +31,11 @@ public class KeyboardService {
                 .addSection(Section.PRODUCT));
         allButtons.add(new Button("Добавить промокод", KeyboardButtonColor.DEFAULT, true, 3, 1)
                 .addSection(Section.COINS));
-        allButtons.add(new Button("Добавить монет", KeyboardButtonColor.DEFAULT, true, 4, 1)
+        allButtons.add(new Button("Добавить энергию", KeyboardButtonColor.DEFAULT, true, 4, 1)
                 .addSection(Section.COINS));
-        allButtons.add(new Button("Убавить монет", KeyboardButtonColor.DEFAULT, true, 4, 2)
+        allButtons.add(new Button("Убавить энергию", KeyboardButtonColor.DEFAULT, true, 4, 2)
+                .addSection(Section.COINS));
+        allButtons.add(new Button("Сброс энергии", KeyboardButtonColor.NEGATIVE, true, 5, 1)
                 .addSection(Section.COINS));
         allButtons.add(new Button("Добавить товар", KeyboardButtonColor.DEFAULT, true, 3, 1)
                 .addSection(Section.PRODUCT));
@@ -41,6 +43,8 @@ public class KeyboardService {
                 .addSection(Section.PRODUCT));
         allButtons.add(new Button("ОТМЕНА", KeyboardButtonColor.NEGATIVE, false, 1, 1)
                 .addSection(Section.PROCESS));
+        allButtons.add(new Button("Сделать рассылку", KeyboardButtonColor.DEFAULT, true, 3, 2)
+                .addSection(Section.PRODUCT));
     }
 
     public Keyboard getKeyboardForPageProduct(Page<Product> products, int page) {

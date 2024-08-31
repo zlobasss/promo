@@ -19,6 +19,8 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private VkApiService vkApiService;
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     public User save(UserRequest request) {
@@ -68,6 +70,19 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public void sendMessageByListUser(List<User> userList, String message) {
+        for (User user : userList) {
+            vkApiService.sendMessage(user.getVkId(), message, null);
+        }
+    }
+
+    public void resetCoinsByListUser(List<User> users) {
+        for (User user : users) {
+            user.setCoins(0);
+            userRepository.save(user);
+        }
+    }
+
     public User addCoins(String vkId, int coins) {
         User user = userRepository.findByVkId(vkId);
         if (!validateNumCoinsAndUserExist(user, coins)) {
@@ -87,7 +102,7 @@ public class UserService {
     }
 
     public String getRating(String vkId) {
-        StringBuilder message = new StringBuilder("Топ пользователей по монетам:\n");
+        StringBuilder message = new StringBuilder("Топ пользователей по энергии ⚡:\n");
         List<RatingLineResponse> top = new ArrayList<>();
 
         List<Map<String, Object>> topUsers = getTopUsers();
