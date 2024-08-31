@@ -4,6 +4,7 @@ import com.example.promo.dto.UserRequest;
 import com.example.promo.entity.User;
 import com.example.promo.service.UserService;
 import com.example.promo.service.VkApiService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,9 @@ import java.util.concurrent.ExecutionException;
 @Configuration
 public class AppConfig {
 
+    @Autowired
     private final UserService userService;
+    @Autowired
     private final VkApiService vkApiService;
     private final String vkIds;
 
