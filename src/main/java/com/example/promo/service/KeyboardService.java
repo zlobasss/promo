@@ -73,7 +73,7 @@ public class KeyboardService {
 
     public Keyboard getKeyboardBySectionAndIsAdmin(Section section, Boolean isAdmin) {
         List<List<Button>> linesWithButtons = new ArrayList<>();
-        int lines = 4;
+        int lines = 5;
         for (int i = 0; i < lines; i++) {
             List<Button> buttons = new ArrayList<>();
             linesWithButtons.add(buttons);
