@@ -48,14 +48,17 @@ public class AppConfig {
             System.out.print("vkId: " + vkId);
             try {
                 userRequest1 = userRequest.get();
-                System.out.println(" : Success");
+                System.out.println(" : Success : " + userRequest1.getFirstName() + ' ' + userRequest1.getLastName());
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
+            System.out.println("Save...");
             user = userService.save(userRequest1);
             if (user == null) {
+                System.out.println("Search...");
                 user = userService.getUserByVkId(vkId);
             }
+            System.out.println("Set...");
             userService.setAdmin(userRequest1, true);
             System.out.println("Admin: " + user.getFirstName() + " " + user.getLastName());
         }
