@@ -43,8 +43,8 @@ public class KeyboardService {
                 .addSection(Section.PRODUCT));
         allButtons.add(new Button("ОТМЕНА", KeyboardButtonColor.NEGATIVE, false, 1, 1)
                 .addSection(Section.PROCESS));
-        allButtons.add(new Button("Сделать рассылку", KeyboardButtonColor.DEFAULT, true, 3, 2)
-                .addSection(Section.PRODUCT));
+        allButtons.add(new Button("Сделать рассылку", KeyboardButtonColor.POSITIVE, true, 2, 1)
+                .addSection(Section.START));
     }
 
     public Keyboard getKeyboardForPageProduct(Page<Product> products, int page) {

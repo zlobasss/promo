@@ -424,7 +424,7 @@ public class VkWebhookController {
                         break;
                     case "Сделать рассылку":
                         vkIdAndLastCommand.put(vkId, "Сделать рассылку 1");
-                        vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section., user.getIsAdmin()));
+                        vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.START, user.getIsAdmin()));
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
                         messageForSend = "Введите сообщение рассылки...";
                         break;
