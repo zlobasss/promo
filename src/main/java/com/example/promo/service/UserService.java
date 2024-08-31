@@ -6,6 +6,7 @@ import com.example.promo.entity.User;
 import com.example.promo.exception.CoinLessZeroException;
 import com.example.promo.exception.UserNotFoundException;
 import com.example.promo.repository.UserRepository;
+import com.vk.api.sdk.objects.messages.Keyboard;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -72,7 +73,7 @@ public class UserService {
 
     public void sendMessageByListUser(List<User> userList, String message) {
         for (User user : userList) {
-            vkApiService.sendMessage(user.getVkId(), message, null);
+            vkApiService.sendMessage(user.getVkId(), message, new Keyboard());
         }
     }
 

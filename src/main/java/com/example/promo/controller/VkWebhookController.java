@@ -163,10 +163,11 @@ public class VkWebhookController {
                         messageForSend = "Рассылка отправлена....";
                         break;
                     case "Сброс энергии 1":
+                        messageForSend = "Отменено...";
                         if (Objects.equals(text, "Да")) {
                             userService.resetCoinsByListUser(userRepository.findAll());
+                            messageForSend = "Сброс осуществлён....";
                         }
-                        messageForSend = "Сброс осуществлён....";
                         break;
                     case "Убавить энергии 1":
                         UserRequest userRequestReduce = null;
