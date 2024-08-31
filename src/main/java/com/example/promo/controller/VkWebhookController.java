@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/webhook")
@@ -65,7 +66,12 @@ public class VkWebhookController {
         this.keyboardService = keyboardService;
         this.promoCodeService = promoCodeService;
         this.productService = productService;
-        this.manager = userService.getUserByVkId(vkApiService.getUserInfo(vkId).getVkId());
+        try {
+            this.manager = userService.getUserByVkId(vkApiService.getUserInfo(vkId).get().getVkId());
+            System.out.println("Manager init");
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -91,7 +97,12 @@ public class VkWebhookController {
         User user = userService.getUserByVkId(vkId);
 
         if (user == null) {
-            UserRequest request = vkApiService.getUserInfo(vkId);
+            UserRequest request = null;
+            try {
+                request = vkApiService.getUserInfo(vkId).get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
             user = userService.save(request);
         }
 
@@ -112,19 +123,24 @@ public class VkWebhookController {
                     case "Ввести промокод":
                         messageForSend = promoCodeService.useCode(text, vkId);
                         break;
-                    case "Добавить монеты 1":
-                        UserRequest userRequest = vkApiService.getUserInfo(text);
+                    case "Добавить энергию 1":
+                        UserRequest userRequest = null;
+                        try {
+                            userRequest = vkApiService.getUserInfo(text).get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
                         if (userService.getUserByVkId(userRequest.getVkId()) == null) {
                             messageForSend = "Пользователь не найден";
                             break;
                         }
                         vkIdAndLastKeyboard.put(vkId, keyboard);
-                        vkIdAndLastCommand.put(vkId, "Добавить монет 2");
+                        vkIdAndLastCommand.put(vkId, "Добавить энергию 2");
                         vkIdAndAddCoinForVkId.put(vkId, userRequest.getVkId());
-                        messageForSend = "Введите количество монет...";
+                        messageForSend = "Введите количество энергии ⚡...";
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
                         break;
-                    case "Добавить монет 2":
+                    case "Добавить энергию 2":
                         int coins = 0;
                         try {
                             coins = Integer.parseInt(text);
@@ -134,24 +150,29 @@ public class VkWebhookController {
                         }
                         String vkIdRequest = vkIdAndAddCoinForVkId.get(vkId);
                         if (userService.addCoins(vkIdRequest, coins) == null) {
-                            messageForSend = "Число монет меньше нуля...";
+                            messageForSend = "Энергии меньше нуля...";
                             break;
                         }
-                        messageForSend = "Добавлено " + coins + " монет для " + vkIdRequest;
+                        messageForSend = "Добавлено " + coins + " энергии для " + vkIdRequest;
                         break;
-                    case "Убавить монеты 1":
-                        UserRequest userRequestReduce = vkApiService.getUserInfo(text);
+                    case "Убавить энергии 1":
+                        UserRequest userRequestReduce = null;
+                        try {
+                            userRequestReduce = vkApiService.getUserInfo(text).get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
                         if (userService.getUserByVkId(userRequestReduce.getVkId()) == null) {
                             messageForSend = "Пользователь не найден";
                             break;
                         }
                         vkIdAndLastKeyboard.put(vkId, keyboard);
-                        vkIdAndLastCommand.put(vkId, "Убавить монет 2");
+                        vkIdAndLastCommand.put(vkId, "Убавить энергии 2");
                         vkIdAndAddCoinForVkId.put(vkId, userRequestReduce.getVkId());
-                        messageForSend = "Введите количество монет...";
+                        messageForSend = "Введите количество энергии ⚡...";
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
                         break;
-                    case "Убавить монет 2":
+                    case "Убавить энергию 2":
                         int coinsReduce = 0;
                         try {
                             coinsReduce = Integer.parseInt(text);
@@ -161,10 +182,10 @@ public class VkWebhookController {
                         }
                         String vkIdRequestReduce = vkIdAndAddCoinForVkId.get(vkId);
                         if (userService.reduceCoins(vkIdRequestReduce, coinsReduce) == null) {
-                            messageForSend = "Число монет меньше нуля...";
+                            messageForSend = "Число энергии меньше нуля...";
                             break;
                         }
-                        messageForSend = "Уменьшено " + coinsReduce + " монет для " + vkIdRequestReduce;
+                        messageForSend = "Уменьшено " + coinsReduce + " энергии для " + vkIdRequestReduce;
                         break;
                     case "Добавить промокод 1":
                         PromoCode promoCode = new PromoCode();
@@ -193,7 +214,7 @@ public class VkWebhookController {
                             break;
                         }
                         vkIdAndPromoCodeRequest.get(vkId).setNumUse(numUse);
-                        messageForSend = "Введите количество монет...";
+                        messageForSend = "Введите количество энергии ⚡...";
                         vkIdAndLastKeyboard.put(vkId, keyboard);
                         vkIdAndLastCommand.put(vkId, "Добавить промокод 3");
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
@@ -304,7 +325,7 @@ public class VkWebhookController {
                                     vkApiService.sendMessage(manager.getVkId(), messageForManager, new Keyboard());
                                 }
                                 else {
-                                    messageForSend = "Недостаточно монет";
+                                    messageForSend = "Недостаточно энергии ⚡";
                                 }
                                 isWorked = true;
                             }
@@ -325,7 +346,7 @@ public class VkWebhookController {
                                     .append(product3.getName())
                                     .append(" > = < ")
                                     .append(product3.getPrice())
-                                    .append(" монет>\n");
+                                    .append(" энергии ⚡ >\n");
                         }
                         vkIdAndLastKeyboard.put(vkId, keyboard);
                         keyboard = keyboardService.getKeyboardForPageProduct(productsNewPage, page);
@@ -337,9 +358,9 @@ public class VkWebhookController {
         }
         else {
             switch (text) {
-                case "Монеты":
+                case "Энергия":
                     keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin());
-                    messageForSend = "Вы в разделе монеты";
+                    messageForSend = "Вы в разделе энергии";
                     break;
                 case "Главное":
                     keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.START, user.getIsAdmin());
@@ -375,21 +396,21 @@ public class VkWebhookController {
                                 .append(product.getName())
                                 .append(" > = < ")
                                 .append(product.getPrice())
-                                .append(" монет>\n");
+                                .append(" энергии ⚡ >\n");
                     }
                     messageForSend = messageForSendBuilder.toString();
                     break;
             }
             if (user.getIsAdmin()) {
                 switch (text) {
-                    case "Убавить монет":
-                        vkIdAndLastCommand.put(vkId, "Убавить монеты 1");
+                    case "Убавить энергию":
+                        vkIdAndLastCommand.put(vkId, "Убавить энергию 1");
                         vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin()));
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
                         messageForSend = "Введите id пользователя...";
                         break;
-                    case "Добавить монет":
-                        vkIdAndLastCommand.put(vkId, "Добавить монеты 1");
+                    case "Добавить энергию":
+                        vkIdAndLastCommand.put(vkId, "Добавить энергию 1");
                         vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin()));
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
                         messageForSend = "Введите id пользователя...";

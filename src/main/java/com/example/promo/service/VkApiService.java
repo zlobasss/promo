@@ -42,7 +42,8 @@ public class VkApiService {
         }
     }
 
-    public UserRequest getUserInfo(String vkId) {
+    @Async
+    public CompletableFuture<UserRequest> getUserInfo(String vkId) {
         UserRequest request = new UserRequest();
         List<GetResponse> response;
         try {
@@ -57,7 +58,7 @@ public class VkApiService {
         request.setFirstName(getResponse.getFirstName());
         request.setLastName(getResponse.getLastName());
         request.setVkId(getResponse.getId().toString());
-        return request;
+        return CompletableFuture.completedFuture(request);
     }
 
 }

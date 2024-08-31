@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Configuration
 public class AppConfig {
@@ -33,17 +35,26 @@ public class AppConfig {
 
         List<String> idList = List.of(vkIds.split(" "));
         for (String vkId : idList) {
-            UserRequest userRequest = vkApiService.getUserInfo(vkId);
+            CompletableFuture<UserRequest> userRequest = vkApiService.getUserInfo(vkId);
             if (userRequest == null) {
                 System.out.println("User not found: " + vkId);
                 continue;
             }
-            User user = userService.save(userRequest);
+            User user = null;
+            try {
+                user = userService.save(userRequest.get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
             if (user == null) {
                 user = userService.getUserByVkId(vkId);
             }
-            userService.setAdmin(userRequest, true);
-            System.out.println("Admin: " + userRequest.getFirstName() + " " + userRequest.getLastName());
+            try {
+                userService.setAdmin(userRequest.get(), true);
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Admin: " + user.getFirstName() + " " + user.getLastName());
         }
     }
 

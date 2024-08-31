@@ -16,7 +16,7 @@ public class KeyboardService {
     private final List<Button> allButtons = new ArrayList<>();
 
     public KeyboardService() {
-        allButtons.add(new Button("Монеты", KeyboardButtonColor.DEFAULT, false, 1, 1)
+        allButtons.add(new Button("Энергия", KeyboardButtonColor.DEFAULT, false, 1, 1)
                 .addSection(Section.START)
                 .addSection(Section.PRODUCT));
         allButtons.add(new Button("Рейтинг", KeyboardButtonColor.DEFAULT, false, 2, 1)
