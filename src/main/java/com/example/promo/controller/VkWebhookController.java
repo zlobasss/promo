@@ -162,6 +162,12 @@ public class VkWebhookController {
                         userService.sendMessageByListUser(userRepository.findByIsAdmin(false), text);
                         messageForSend = "Рассылка отправлена....";
                         break;
+                    case "Сброс энергии 1":
+                        if (Objects.equals(text, "Да")) {
+                            userService.resetCoinsByListUser(userRepository.findAll());
+                        }
+                        messageForSend = "Сброс осуществлён....";
+                        break;
                     case "Убавить энергии 1":
                         UserRequest userRequestReduce = null;
                         try {
@@ -429,9 +435,10 @@ public class VkWebhookController {
                         messageForSend = "Введите сообщение рассылки...";
                         break;
                     case "Сброс энергии":
-                        userService.resetCoinsByListUser(userRepository.findAll());
-                        keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin());
-                        messageForSend = "Сброс завершился...";
+                        vkIdAndLastCommand.put(vkId, "Сброс энергии 1");
+                        vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin()));
+                        keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
+                        messageForSend = "Если уверены, то введите \"Да\"...";
                         break;
                     case "Добавить промокод":
                         vkIdAndLastCommand.put(vkId, "Добавить промокод 1");
