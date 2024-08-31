@@ -6,6 +6,7 @@ import com.example.promo.entity.User;
 import com.example.promo.exception.CoinLessZeroException;
 import com.example.promo.exception.UserNotFoundException;
 import com.example.promo.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -58,7 +59,11 @@ public class UserService {
         return coins > 0 && user != null;
     }
 
+    @Transactional
     public User setAdmin(User user, Boolean admin) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
         user.setIsAdmin(admin);
         return userRepository.save(user);
     }
