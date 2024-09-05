@@ -11,6 +11,8 @@ import com.example.promo.service.*;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.objects.messages.Keyboard;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -93,6 +95,16 @@ public class VkWebhookController {
 
         Map<String, Object> object = (Map<String, Object>) payload.get("object");
         Map<String, Object> message = (Map<String, Object>) object.get("message");
+        String payloadMessage = (String) message.get("payload");
+        JSONObject jsonObject = null;
+        String command = "";
+        try {
+            jsonObject = new JSONObject(payloadMessage);
+            command = jsonObject.getString("command");
+        } catch (Exception e) {
+            System.out.println("Не удалось форматировать команду");
+        }
+
         String text = (String) message.get("text");
         Integer userIdInteger = (Integer) message.get("from_id");
         String vkId = String.valueOf(userIdInteger);
@@ -114,14 +126,47 @@ public class VkWebhookController {
 
         String lastCommand = vkIdAndLastCommand.get(vkId);
 
-        if (lastCommand != null) {
+        if (!(Objects.equals(command, "null") || command.isEmpty())) {
+            System.out.println("command: (" + command + ")");
+            String[] parts = command.split(" ");
+            switch (parts[0]) {
+                case "page":
+                    if (parts.length != 2) {
+                        break;
+                    }
+                    int page = 0;
+                    try {
+                        page = Integer.parseInt(parts[1]);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Неверный формат страницы: " + parts[1]);
+                        break;
+                    }
+                    Page<Product> products = productService.getProducts(page);
+                    String messageForNavigation = "Список товаров:";
+                    Keyboard keyboardForNavigation = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page);
+                    vkApiService.sendMessage(vkId, messageForNavigation, keyboardForNavigation);
+                    StringBuilder messageForSendBuilder = new StringBuilder();
+                    for (Product product3 : products.getContent()) {
+                        messageForSendBuilder
+                                .append("[ ")
+                                .append(product3.getCode())
+                                .append(" ] - < ")
+                                .append(product3.getName())
+                                .append(" > = < ")
+                                .append(product3.getPrice())
+                                .append(" энергии ⚡ >\n");
+                    }
+                    keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
+                    messageForSend = messageForSendBuilder.toString();
+                    break;
+            }
+        } else if (lastCommand != null) {
             keyboard = vkIdAndLastKeyboard.get(vkId);
             vkIdAndLastKeyboard.remove(vkId);
             vkIdAndLastCommand.remove(vkId);
             if (Objects.equals(text, "ОТМЕНА")) {
                 messageForSend = "Отменено...";
-            }
-            else {
+            } else {
                 switch (lastCommand) {
                     case "Ввести промокод":
                         messageForSend = promoCodeService.useCode(text, vkId);
@@ -203,7 +248,7 @@ public class VkWebhookController {
                         break;
                     case "Добавить промокод 1":
                         PromoCode promoCode = new PromoCode();
-                        if (text.length() <= 0 || text.length() > 32) {
+                        if (text.isEmpty() || text.length() > 32) {
                             messageForSend = "Неверная длина кода";
                             vkIdAndPromoCodeRequest.remove(vkId);
                             break;
@@ -317,18 +362,16 @@ public class VkWebhookController {
                         Page<Product> products = productService.getProducts(page);
                         if (Objects.equals(text, "«") && page != 0) {
                             page--;
-                        }
-                        else if (Objects.equals(text, ">>") && page != products.getTotalPages()) {
+                        } else if (Objects.equals(text, "»") && page != products.getTotalPages()) {
                             page++;
-                        } 
-                        else if (Objects.equals(text, "Товары")) {
+                        } else if (Objects.equals(text, "Товары")) {
                             vkIdAndPageRequest.remove(vkId);
                             messageForSend = "Вы в разделе товары";
                             break;
                         }
                         boolean isWorked = false;
                         for (Product product3 : products.getContent()) {
-                            if (Objects.equals(text, "Купить <" + product3.getName() + ">")) {
+                            if (Objects.equals(text, product3.getName())) {
                                 User user1 = userService.getUserByVkId(vkId);
                                 if (user1.getCoins() >= product3.getPrice()) {
                                     // Логика Написания менеджеру
@@ -337,8 +380,7 @@ public class VkWebhookController {
                                     messageForSend = "Спасибо за покупку ожидайте нашего менеджера!";
                                     String messageForManager = "Пользователь < https://vk.com/id" + vkId + " > купил товар < " + product3.getName() + " >";
                                     vkApiService.sendMessage(manager.getVkId(), messageForManager, new Keyboard());
-                                }
-                                else {
+                                } else {
                                     messageForSend = "Недостаточно энергии ⚡";
                                 }
                                 isWorked = true;
@@ -346,7 +388,7 @@ public class VkWebhookController {
                         }
                         if (isWorked) {
                             vkIdAndLastKeyboard.put(vkId, keyboard);
-                            keyboard = keyboardService.getKeyboardForPageProduct(products, page);
+                            keyboard = keyboardService.getKeyboardWithProducts(products);
                             vkIdAndLastCommand.put(vkId, "Посмотреть товары");
                             break;
                         }
@@ -363,14 +405,13 @@ public class VkWebhookController {
                                     .append(" энергии ⚡ >\n");
                         }
                         vkIdAndLastKeyboard.put(vkId, keyboard);
-                        keyboard = keyboardService.getKeyboardForPageProduct(productsNewPage, page);
+                        keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
                         messageForSend = messageForSendBuilder.toString();
                         vkIdAndLastCommand.put(vkId, "Посмотреть товары");
                         break;
                 }
             }
-        }
-        else {
+        } else {
             switch (text) {
                 case "Энергия":
                     keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.COINS, user.getIsAdmin());
@@ -400,8 +441,10 @@ public class VkWebhookController {
                     int page = 0;
                     vkIdAndPageRequest.put(vkId, page);
                     Page<Product> products = productService.getProducts(0);
-                    keyboard = keyboardService.getKeyboardForPageProduct(products, page);
-                    StringBuilder messageForSendBuilder = new StringBuilder("Список товаров:\n");
+                    keyboard = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page);
+                    vkApiService.sendMessage(vkId, "Список товаров:", keyboard);
+                    keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
+                    StringBuilder messageForSendBuilder = new StringBuilder();
                     for (Product product : products.getContent()) {
                         messageForSendBuilder
                                 .append("[ ")
@@ -475,3 +518,4 @@ public class VkWebhookController {
         return ResponseEntity.badRequest().body("BAD_REQUEST");
     }
 }
+

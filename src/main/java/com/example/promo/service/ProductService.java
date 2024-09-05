@@ -1,6 +1,7 @@
 package com.example.promo.service;
 
 import com.example.promo.entity.Product;
+import com.example.promo.entity.Section;
 import com.example.promo.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,19 +19,8 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    private Product build(Product product) {
-        return Product.builder()
-                .name(product.getName())
-                .price(product.getPrice())
-                .code(product.getCode())
-                .build();
-    }
-
-    public Product save(Product product) {
-        if (findByCode(product.getCode()) != null) {
-            return null;
-        }
-        return productRepository.save(build(product));
+    public void save(Product product) {
+        productRepository.save(product);
     }
 
     public Product findByCode(String code) {
@@ -46,9 +36,10 @@ public class ProductService {
     }
 
     public Page<Product> getProducts(int pageNumber) {
-        int pageSize = 3; // Количество товаров на странице
+        int pageSize = 5; // Количество товаров на странице
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         return productRepository.findAll(pageable);
     }
+
 
 }

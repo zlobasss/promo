@@ -14,6 +14,7 @@ import java.util.List;
 @Setter
 public class Button {
     private String text;
+    private String command;
     private KeyboardButtonColor color;
     private List<Section> sections;
     private Boolean isAdminButton;
@@ -28,6 +29,11 @@ public class Button {
         this.y = y;
         sections = new ArrayList<>();
     }
+    
+    public Button setCommand(String command) {
+        this.command = command;
+        return this;
+    }
 
     public Button addSection(Section section) {
         sections.add(section);
@@ -38,7 +44,9 @@ public class Button {
         return new KeyboardButton()
                 .setAction(new KeyboardButtonActionText()
                         .setLabel(text)
-                        .setType(KeyboardButtonActionTextType.TEXT))
+                        .setType(KeyboardButtonActionTextType.TEXT)
+                        .setPayload("{\"command\":\"" + command + "\"}"))
+                
                 .setColor(color);
     }
 }

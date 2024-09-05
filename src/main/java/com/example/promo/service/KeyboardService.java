@@ -47,25 +47,31 @@ public class KeyboardService {
                 .addSection(Section.START));
     }
 
-    public Keyboard getKeyboardForPageProduct(Page<Product> products, int page) {
+    public Keyboard getKeyboardWithProducts(Page<Product> products) {
         List<List<Button>> linesWithButtons = new ArrayList<>();
         int x = 1;
         for (Product product : products.getContent()) {
             List<Button> buttons = new ArrayList<>();
-            buttons.add(new Button("Купить <" + product.getName() + ">", KeyboardButtonColor.DEFAULT, false, x, 1));
+            buttons.add(new Button(product.getName(), KeyboardButtonColor.DEFAULT, false, x, 1));
             ++x;
             linesWithButtons.add(buttons);
         }
+        return getKeyboardByLinesWithButtons(linesWithButtons);
+    }
+
+    public Keyboard getKeyboardForPageProduct(int totalPages, int page) {
+        List<List<Button>> linesWithButtons = new ArrayList<>();
+        int x = 1;
         List<Button> buttons = new ArrayList<>();
         int y = 1;
         if (page != 0) {
-            buttons.add(new Button("«", KeyboardButtonColor.DEFAULT, false, x, y));
+            buttons.add(new Button("«", KeyboardButtonColor.DEFAULT, false, x, y).setCommand("page " + (page - 1)));
             ++y;
         }
         buttons.add(new Button("Товары", KeyboardButtonColor.DEFAULT, false, x, y));
         ++y;
-        if (page != products.getTotalPages() - 1) {
-            buttons.add(new Button(">>", KeyboardButtonColor.DEFAULT, false, x, y));
+        if (page != totalPages - 1) {
+            buttons.add(new Button("»", KeyboardButtonColor.DEFAULT, false, x, y).setCommand("page " + (page + 1)));
         }
         linesWithButtons.add(buttons);
         return getKeyboardByLinesWithButtons(linesWithButtons);
