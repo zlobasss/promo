@@ -147,9 +147,9 @@ public class VkWebhookController {
                         break;
                     }
                     Page<Product> products = productService.getProducts(page);
-                    String messageForNavigation = "Прайс-лист и баллы:";
+                    String messageForNavigation = "Прайс-лист:";
                     Keyboard keyboardForNavigation = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page).setOneTime(false);
-                    attachments = "photo-227211038_457239018,photo-227211038_457239019";
+                    attachments = "photo-227211038_457239018";
                     vkApiService.sendMessage(vkId, messageForNavigation, keyboardForNavigation, attachments).join();
 
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
@@ -402,8 +402,8 @@ public class VkWebhookController {
                     Page<Product> products = productService.getProducts(0);
                     keyboard = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page);
                     vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.PRODUCT, user.getIsAdmin()));
-                    attachments = "photo-227211038_457239018,photo-227211038_457239019";
-                    vkApiService.sendMessage(vkId, "Прайс-лист и баллы:", keyboard, attachments).join();
+                    attachments = "photo-227211038_457239018";
+                    vkApiService.sendMessage(vkId, "Прайс-лист:", keyboard, attachments).join();
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
                     messageForSend = "Выберите желаемый товар:";
                     break;
