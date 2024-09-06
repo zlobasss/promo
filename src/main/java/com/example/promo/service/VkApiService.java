@@ -25,8 +25,7 @@ public class VkApiService {
     private final VkApiClient vk;
 
     public VkApiService(@Value("${vk.token}") String accessToken,
-                        @Value("${vk.group}") Long groupId,
-                        @Value("${vk.user}") Long userId) {
+                        @Value("${vk.group}") Long groupId) {
 
         TransportClient transportClient = new HttpTransportClient();
         this.vk = new VkApiClient(transportClient);
