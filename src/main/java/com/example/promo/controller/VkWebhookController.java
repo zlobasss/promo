@@ -143,7 +143,7 @@ public class VkWebhookController {
                     }
                     Page<Product> products = productService.getProducts(page);
                     String messageForNavigation = "Список товаров:";
-                    Keyboard keyboardForNavigation = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page);
+                    Keyboard keyboardForNavigation = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page).setOneTime(false);
                     vkApiService.sendMessage(vkId, messageForNavigation, keyboardForNavigation);
                     StringBuilder messageForSendBuilder = new StringBuilder();
                     for (Product product3 : products.getContent()) {
@@ -157,10 +157,28 @@ public class VkWebhookController {
                                 .append(" энергии ⚡ >\n");
                     }
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
+                    vkIdAndLastKeyboard.put(vkId, keyboard);
                     messageForSend = messageForSendBuilder.toString();
+                    break;
+                case "buy":
+                    if (parts.length != 2) {
+                        break;
+                    }
+                    String code = parts[1];
+                    Product product = productService.findByCode(code);
+                    messageForSend = "Недостаточно энергии ⚡";
+                    if (user.getCoins() >= product.getPrice()) {
+                        user.setCoins(user.getCoins() - product.getPrice());
+                        userService.update(user);
+                        messageForSend = "Спасибо за покупку ожидайте нашего менеджера!";
+                        String messageForManager = "Пользователь < https://vk.com/id" + vkId + " > купил товар < " + product.getName() + " >";
+                        vkApiService.sendMessage(manager.getVkId(), messageForManager, new Keyboard());
+                    }
+                    keyboard = vkIdAndLastKeyboard.get(vkId);
                     break;
             }
         } else if (lastCommand != null) {
+            System.out.println("Last command: " + lastCommand);
             keyboard = vkIdAndLastKeyboard.get(vkId);
             vkIdAndLastKeyboard.remove(vkId);
             vkIdAndLastCommand.remove(vkId);
@@ -356,59 +374,6 @@ public class VkWebhookController {
                         Product product2 = productService.delete(text);
                         messageForSend = "Товар <" + product2.getName() + "> удален";
                         break;
-
-                    case "Посмотреть товары":
-                        int page = vkIdAndPageRequest.get(vkId);
-                        Page<Product> products = productService.getProducts(page);
-                        if (Objects.equals(text, "«") && page != 0) {
-                            page--;
-                        } else if (Objects.equals(text, "»") && page != products.getTotalPages()) {
-                            page++;
-                        } else if (Objects.equals(text, "Товары")) {
-                            vkIdAndPageRequest.remove(vkId);
-                            messageForSend = "Вы в разделе товары";
-                            break;
-                        }
-                        boolean isWorked = false;
-                        for (Product product3 : products.getContent()) {
-                            if (Objects.equals(text, product3.getName())) {
-                                User user1 = userService.getUserByVkId(vkId);
-                                if (user1.getCoins() >= product3.getPrice()) {
-                                    // Логика Написания менеджеру
-                                    user1.setCoins(user1.getCoins() - product3.getPrice());
-                                    userService.update(user1);
-                                    messageForSend = "Спасибо за покупку ожидайте нашего менеджера!";
-                                    String messageForManager = "Пользователь < https://vk.com/id" + vkId + " > купил товар < " + product3.getName() + " >";
-                                    vkApiService.sendMessage(manager.getVkId(), messageForManager, new Keyboard());
-                                } else {
-                                    messageForSend = "Недостаточно энергии ⚡";
-                                }
-                                isWorked = true;
-                            }
-                        }
-                        if (isWorked) {
-                            vkIdAndLastKeyboard.put(vkId, keyboard);
-                            keyboard = keyboardService.getKeyboardWithProducts(products);
-                            vkIdAndLastCommand.put(vkId, "Посмотреть товары");
-                            break;
-                        }
-                        Page<Product> productsNewPage = productService.getProducts(page);
-                        StringBuilder messageForSendBuilder = new StringBuilder("Список товаров:\n");
-                        for (Product product3 : productsNewPage.getContent()) {
-                            messageForSendBuilder
-                                    .append("[ ")
-                                    .append(product3.getCode())
-                                    .append(" ] - < ")
-                                    .append(product3.getName())
-                                    .append(" > = < ")
-                                    .append(product3.getPrice())
-                                    .append(" энергии ⚡ >\n");
-                        }
-                        vkIdAndLastKeyboard.put(vkId, keyboard);
-                        keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
-                        messageForSend = messageForSendBuilder.toString();
-                        vkIdAndLastCommand.put(vkId, "Посмотреть товары");
-                        break;
                 }
             }
         } else {
@@ -436,7 +401,6 @@ public class VkWebhookController {
                     messageForSend = "Введите промокод...";
                     break;
                 case "Посмотреть товары":
-                    vkIdAndLastCommand.put(vkId, "Посмотреть товары");
                     vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.PRODUCT, user.getIsAdmin()));
                     int page = 0;
                     vkIdAndPageRequest.put(vkId, page);

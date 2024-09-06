@@ -52,7 +52,7 @@ public class KeyboardService {
         int x = 1;
         for (Product product : products.getContent()) {
             List<Button> buttons = new ArrayList<>();
-            buttons.add(new Button(product.getName(), KeyboardButtonColor.DEFAULT, false, x, 1));
+            buttons.add(new Button(product.getName(), KeyboardButtonColor.DEFAULT, false, x, 1).setCommand("buy " + product.getCode()));
             ++x;
             linesWithButtons.add(buttons);
         }
