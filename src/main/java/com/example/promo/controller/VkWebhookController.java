@@ -157,10 +157,10 @@ public class VkWebhookController {
                                 .append(" энергии ⚡ >\n");
                     }
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
-                    vkIdAndLastKeyboard.put(vkId, keyboard);
                     messageForSend = messageForSendBuilder.toString();
                     break;
                 case "buy":
+                    messageForSend = "Недостаточно энергии ⚡";
                     if (parts.length != 2) {
                         break;
                     }
@@ -401,11 +401,11 @@ public class VkWebhookController {
                     messageForSend = "Введите промокод...";
                     break;
                 case "Посмотреть товары":
-                    vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.PRODUCT, user.getIsAdmin()));
                     int page = 0;
                     vkIdAndPageRequest.put(vkId, page);
                     Page<Product> products = productService.getProducts(0);
                     keyboard = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page);
+                    vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.PRODUCT, user.getIsAdmin()));
                     vkApiService.sendMessage(vkId, "Список товаров:", keyboard);
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
                     StringBuilder messageForSendBuilder = new StringBuilder();
