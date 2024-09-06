@@ -1,15 +1,23 @@
 package com.example.promo.config;
 
 import com.example.promo.dto.UserRequest;
+import com.example.promo.entity.PhotoEntity;
 import com.example.promo.entity.User;
+import com.example.promo.service.PhotoService;
 import com.example.promo.service.UserService;
 import com.example.promo.service.VkApiService;
+import com.vk.api.sdk.objects.photos.Photo;
+import com.vk.api.sdk.objects.photos.responses.GetMessagesUploadServerResponse;
+import com.vk.api.sdk.objects.photos.responses.MessageUploadResponse;
+import com.vk.api.sdk.objects.photos.responses.SaveMessagesPhotoResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,7 +33,8 @@ public class AppConfig {
 
     public AppConfig(VkApiService vkApiService,
                      UserService userService,
-                     @Value("${vk.admin}") String vkIds) {
+                     @Value("${vk.admin}") String vkIds,
+                     PhotoService photoService) {
         this.vkApiService = vkApiService;
         this.userService = userService;
         this.vkIds = vkIds;

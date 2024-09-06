@@ -73,7 +73,7 @@ public class UserService {
 
     public void sendMessageByListUser(List<User> userList, String message) {
         for (User user : userList) {
-            vkApiService.sendMessage(user.getVkId(), message, new Keyboard());
+            vkApiService.sendMessage(user.getVkId(), message, new Keyboard(), "");
         }
     }
 

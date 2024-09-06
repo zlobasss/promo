@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,6 +34,8 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/webhook")
 public class VkWebhookController {
 
+    private static final String URL_BALL = "src/main/resources/static/not-init/ball.jpg";
+    private static final String URL_PRICE = "src/main/resources/static/not-init/pricelist.jpg";
     private final VkApiService vkApiService;
     private final UserService userService;
     private final KeyboardService keyboardService;
@@ -56,7 +60,7 @@ public class VkWebhookController {
                                ProductService productService,
                                @Value("${vk.manager}") String vkId,
                                @Value("${vk.confirm.code}") String confirm,
-                               @Value("${vk.secret.key}") String secret, UserRepository userRepository) {
+                               @Value("${vk.secret.key}") String secret, UserRepository userRepository) throws ClientException, IOException, URISyntaxException, ApiException {
         CONFIRMATION_CODE = confirm;
         SECRET_KEY = secret;
         vkIdAndLastCommand = new HashMap<>();
@@ -98,6 +102,7 @@ public class VkWebhookController {
         String payloadMessage = (String) message.get("payload");
         JSONObject jsonObject = null;
         String command = "";
+        String attachments = "";
         try {
             jsonObject = new JSONObject(payloadMessage);
             command = jsonObject.getString("command");
@@ -142,22 +147,13 @@ public class VkWebhookController {
                         break;
                     }
                     Page<Product> products = productService.getProducts(page);
-                    String messageForNavigation = "Список товаров:";
+                    String messageForNavigation = "Прайс-лист и баллы:";
                     Keyboard keyboardForNavigation = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page).setOneTime(false);
-                    vkApiService.sendMessage(vkId, messageForNavigation, keyboardForNavigation);
-                    StringBuilder messageForSendBuilder = new StringBuilder();
-                    for (Product product3 : products.getContent()) {
-                        messageForSendBuilder
-                                .append("[ ")
-                                .append(product3.getCode())
-                                .append(" ] - < ")
-                                .append(product3.getName())
-                                .append(" > = < ")
-                                .append(product3.getPrice())
-                                .append(" энергии ⚡ >\n");
-                    }
+                    attachments = "photo-227211038_457239018,photo-227211038_457239019";
+                    vkApiService.sendMessage(vkId, messageForNavigation, keyboardForNavigation, attachments).join();
+
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
-                    messageForSend = messageForSendBuilder.toString();
+                    messageForSend = "Выберите желаемый товар:";
                     break;
                 case "buy":
                     messageForSend = "Недостаточно энергии ⚡";
@@ -172,7 +168,7 @@ public class VkWebhookController {
                         userService.update(user);
                         messageForSend = "Спасибо за покупку ожидайте нашего менеджера!";
                         String messageForManager = "Пользователь < https://vk.com/id" + vkId + " > купил товар < " + product.getName() + " >";
-                        vkApiService.sendMessage(manager.getVkId(), messageForManager, new Keyboard());
+                        vkApiService.sendMessage(manager.getVkId(), messageForManager, new Keyboard(), "");
                     }
                     keyboard = vkIdAndLastKeyboard.get(vkId);
                     break;
@@ -406,20 +402,10 @@ public class VkWebhookController {
                     Page<Product> products = productService.getProducts(0);
                     keyboard = keyboardService.getKeyboardForPageProduct(products.getTotalPages(), page);
                     vkIdAndLastKeyboard.put(vkId, keyboardService.getKeyboardBySectionAndIsAdmin(Section.PRODUCT, user.getIsAdmin()));
-                    vkApiService.sendMessage(vkId, "Список товаров:", keyboard);
+                    attachments = "photo-227211038_457239018,photo-227211038_457239019";
+                    vkApiService.sendMessage(vkId, "Прайс-лист и баллы:", keyboard, attachments).join();
                     keyboard = keyboardService.getKeyboardWithProducts(products).setInline(true);
-                    StringBuilder messageForSendBuilder = new StringBuilder();
-                    for (Product product : products.getContent()) {
-                        messageForSendBuilder
-                                .append("[ ")
-                                .append(product.getCode())
-                                .append(" ] - < ")
-                                .append(product.getName())
-                                .append(" > = < ")
-                                .append(product.getPrice())
-                                .append(" энергии ⚡ >\n");
-                    }
-                    messageForSend = messageForSendBuilder.toString();
+                    messageForSend = "Выберите желаемый товар:";
                     break;
             }
             if (user.getIsAdmin()) {
@@ -469,7 +455,7 @@ public class VkWebhookController {
                 }
             }
         }
-        vkApiService.sendMessage(vkId, messageForSend, keyboard);
+        vkApiService.sendMessage(vkId, messageForSend, keyboard, "");
 
         return ResponseEntity.ok("OK");
     }
