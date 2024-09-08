@@ -228,7 +228,7 @@ public class VkWebhookController {
                             messageForSend = "Сброс осуществлён....";
                         }
                         break;
-                    case "Убавить энергии 1":
+                    case "Убавить энергию 1":
                         UserRequest userRequestReduce = null;
                         try {
                             userRequestReduce = vkApiService.getUserInfo(text).get();
@@ -240,7 +240,7 @@ public class VkWebhookController {
                             break;
                         }
                         vkIdAndLastKeyboard.put(vkId, keyboard);
-                        vkIdAndLastCommand.put(vkId, "Убавить энергии 2");
+                        vkIdAndLastCommand.put(vkId, "Убавить энергию 2");
                         vkIdAndAddCoinForVkId.put(vkId, userRequestReduce.getVkId());
                         messageForSend = "Введите количество энергии ⚡...";
                         keyboard = keyboardService.getKeyboardBySectionAndIsAdmin(Section.PROCESS, user.getIsAdmin());
